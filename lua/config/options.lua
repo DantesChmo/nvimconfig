@@ -22,6 +22,7 @@ opt.incsearch = true
 
 -- Внешний вид
 opt.termguicolors = true
+opt.laststatus = 3 -- один глобальный статуслайн на весь редактор (а не по окну) — больше места под путь
 opt.signcolumn = "yes"
 opt.cursorline = true
 opt.scrolloff = 8
@@ -39,4 +40,11 @@ opt.timeoutlen = 300
 -- Дополнительно
 opt.completeopt = "menu,menuone,noselect"
 opt.pumheight = 10
+
+-- Команды работают и на русской раскладке (ЙЦУКЕН -> QWERTY).
+-- langmap транслирует буквы только для normal/visual/operator-режимов,
+-- ввод текста в insert не затрагивается. Пример из :help langmap.
+opt.langmap =
+  "ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ," ..
+  "фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz"
 
