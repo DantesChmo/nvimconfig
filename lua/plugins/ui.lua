@@ -6,9 +6,34 @@ return {
     config = function ()
       require('nvim-tree').setup({
         sort_by = 'case_sensitive',
-        renderer = { group_empty = true },
+        git = { enable = true },
+        -- Показываем игнорируемые файлы, но визуально отделяем их
+        filters = { git_ignored = false },
+        renderer = {
+          group_empty = true,
+          highlight_git = 'name', -- подсветка имени для git-ignored (и arc через декоратор)
+          decorators = {
+            'Git', 'Open', 'Hidden', 'Modified', 'Bookmark', 'Diagnostics', 'Copied',
+            require('config.arcignore'), -- .arcignore: тот же вид, что git-ignored
+            'Cut',
+          },
+        },
         actions = {
-          open_file = { quit_on_open = false, resize_window = true },
+          open_file = {
+            quit_on_open = false,
+            resize_window = true,
+            -- Когда окон несколько — при открытии файла показываем на них буквы,
+            -- жмёшь букву и файл открывается именно в это окно.
+            window_picker = {
+              enable = true,
+              picker = 'default',
+              chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+              exclude = {
+                filetype = { 'notify', 'packer', 'qf', 'diff', 'fugitive', 'fugitiveblame' },
+                buftype = { 'nofile', 'terminal', 'help' },
+              },
+            },
+          },
         },
         view = {
           width = 30,
@@ -30,6 +55,9 @@ return {
           vim.keymap.set('n', 'h', api.node.navigate.parent_close, opts('Close Directory')) -- закрыть папку
           vim.keymap.set('n', 'l', api.node.open.edit, opts('Open')) -- открыть файл/папку
 
+          -- Path-aware поиск: печатаешь путь через "/", папки раскрываются на лету
+          vim.keymap.set('n', '/', require('config.tree_path_search').start, opts('Path Search'))
+
           -- Работа с файлами
           vim.keymap.set('n', 'a', api.fs.create, opts('Create File')) -- добавить файл
           vim.keymap.set('n', 'd', api.fs.remove, opts('Delete File')) -- удалить файл
@@ -49,17 +77,34 @@ return {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function ()
+      -- Компонент имени файла с относительным путём — переиспользуем в winbar
+      local filename_with_path = {
+        "filename",
+        path = 1,             -- относительный путь от рабочей директории (0=имя, 2=абсолютный, 3=абс. с ~, 4=имя+родитель)
+        shorting_target = 40, -- ужимать путь (foo/bar/baz → f/b/baz), если места не хватает
+        symbols = {
+          modified = "[+]",      -- файл изменён и не сохранён
+          readonly = "[RO]",     -- файл только для чтения
+          unnamed = "[No Name]", -- буфер без имени
+          newfile = "[New]",     -- новый, ещё не записанный на диск файл
+        },
+      }
+
       require("lualine").setup({
         options = {
           theme = "auto",
           section_separators = "",
-          component_separators = ""
+          component_separators = "",
+          globalstatus = true, -- один статуслайн на весь редактор (совпадает с laststatus=3)
+          disabled_filetypes = {
+            winbar = { "NvimTree", "toggleterm", "help" }, -- не рисуем winbar на дереве, терминале, справке
+          },
         },
         sections = {
           lualine_a = { "mode" },
           lualine_b = { "branch" },
           lualine_c = {
-            "filename",
+            filename_with_path, -- в глобальном статуслайне снизу — полный путь (места достаточно)
             function()
               return require("lsp-progress").progress()
             end,
@@ -67,6 +112,13 @@ return {
           lualine_x = { "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },
+        },
+        -- Winbar — отдельная строка сверху каждого окна, только имя файла
+        winbar = {
+          lualine_c = { "filename" }, -- активное окно: имя файла
+        },
+        inactive_winbar = {
+          lualine_c = { "filename" }, -- неактивные окна: имя файла, приглушённо
         },
       })
     end

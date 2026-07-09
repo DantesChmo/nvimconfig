@@ -1,7 +1,7 @@
 -- ~/.config/nvim/lua/plugins/format.lua
 -- Форматирование через conform.nvim.
 -- Для Java используется google-java-format (бинарь поставлен mason-tool-installer'ом).
--- Базовый <leader>f в lsp_shared зовёт vim.lsp.buf.format; для Java переопределяем его на conform,
+-- Базовый <leader>cf в lsp_shared зовёт vim.lsp.buf.format; для Java переопределяем его на conform,
 -- чтобы вместо Eclipse-форматтера jdtls применять google-java-format.
 
 return {
@@ -25,11 +25,11 @@ return {
         },
       })
 
-      -- Для Java перебиваем <leader>f на conform (переопределяем буферно после открытия Java-файла)
+      -- Для Java перебиваем <leader>cf на conform (переопределяем буферно после открытия Java-файла)
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "java",
         callback = function(args)
-          vim.keymap.set("n", "<leader>f", function()
+          vim.keymap.set("n", "<leader>cf", function()
             conform.format({ bufnr = args.buf, async = true, lsp_format = "fallback" })
           end, { buffer = args.buf, silent = true, desc = "Format: google-java-format" })
         end,
