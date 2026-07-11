@@ -190,6 +190,13 @@ function M.refresh(bufnr)
 end
 
 function M.setup()
+  -- Без бинарника arc (VCS Аркадии/X5) каждый vim.system({"arc",...}) бросает
+  -- ENOENT на автокомандах и заваливает буферы ошибками. Нет arc → модуль не
+  -- поднимается, значки рисует штатный gitsigns.
+  if vim.fn.executable("arc") == 0 then
+    return
+  end
+
   setup_highlights()
 
   local group = vim.api.nvim_create_augroup("ArcSigns", { clear = true })

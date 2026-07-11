@@ -59,7 +59,6 @@ return {
       }),
 
       sources = cmp.config.sources({
-        { name = "cmp_ai" },
         { name = "nvim_lsp" },
         { name = "luasnip" },
         { name = "buffer" },
