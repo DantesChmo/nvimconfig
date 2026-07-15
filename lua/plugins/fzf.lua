@@ -15,6 +15,13 @@ return {
         winopts = {
           height = 0.85,
           width = 0.80,
+          -- Глобальный `tnoremap <Esc> <C-\><C-n>` (config/keymaps.lua) крадёт Esc
+          -- у fzf: роняет нас в Neovim Normal-mode поверх терминала, где j/k не
+          -- скроллят результаты. Буфер fzf держит <Esc> у себя и пробрасывает его
+          -- в fzf — тогда наш esc-transform (hide-input/abort) снова работает.
+          on_create = function()
+            vim.keymap.set("t", "<Esc>", "<Esc>", { buffer = true, nowait = true })
+          end,
           preview = {
             default = "builtin", -- встроенный превьювер: рендерит код в Neovim с treesitter-подсветкой (без внешнего bat)
             layout = "vertical", -- превью кода снизу под списком результатов
@@ -42,6 +49,14 @@ return {
             -- transform исполняется через $SHELL -c, поэтому POSIX-тест `[ ]`, не `[[ ]]`.
             ["esc"]   = [[transform:[ "$FZF_INPUT_STATE" = hidden ] && echo abort || echo "hide-input+rebind(i,/,j,k,g,q)"]],
           },
+        },
+        -- Инлайн-фильтрация каталогов/файлов прямо в момент поиска.
+        -- В окне live_grep пишем: `запрос -- !dist !build` — всё после ` -- `
+        -- уходит в ripgrep как --iglob (!dist исключить, *.lua сузить).
+        grep = {
+          rg_glob = true,            -- парсить glob'ы из запроса
+          glob_flag = "--iglob",     -- нечувствительно к регистру
+          glob_separator = "%s%-%-", -- разделитель " -- "
         },
       })
 

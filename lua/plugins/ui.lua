@@ -56,7 +56,12 @@ return {
           vim.keymap.set('n', 'l', api.node.open.edit, opts('Open')) -- открыть файл/папку
 
           -- Path-aware поиск: печатаешь путь через "/", папки раскрываются на лету
-          vim.keymap.set('n', '/', require('config.tree_path_search').start, opts('Path Search'))
+          local tree_search = require('config.tree_path_search')
+          vim.keymap.set('n', '/', tree_search.start, opts('Path Search'))
+          -- Прыжки по совпадениям и сброс подсветки — как n/N и <leader><space> в тексте
+          vim.keymap.set('n', 'n', tree_search.next, opts('Path Search: Next'))
+          vim.keymap.set('n', 'N', tree_search.prev, opts('Path Search: Prev'))
+          vim.keymap.set('n', '<leader><space>', tree_search.clear, opts('Path Search: Clear'))
 
           -- Работа с файлами
           vim.keymap.set('n', 'a', api.fs.create, opts('Create File')) -- добавить файл
